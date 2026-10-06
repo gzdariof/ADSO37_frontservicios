@@ -3,40 +3,42 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
 
 class ServicioService
 {
-    protected Client $httpClient;
+    protected Client $client;
     protected string $baseUrl;
     public function __construct()
     {
         // Constructor logic here
-        $this->$baseUrl = rtrim('API_BASE_URL', 'http://localhost:5115','/');
-        $this->httpClient = new Client([
+        $this->baseUrl = rtrim(env('API_BASE_URL', 'http://localhost:5216'), '/');
+
+        $this->client = new Client([
             'base_uri' => $this->baseUrl,
             'timeout'  => 10,
-            'headers' => [
-                'Accept' => 'application/json',
+            'verify'   => false,
+            'headers'  => [
                 'Content-Type' => 'application/json',
+                'Accept'       => 'application/json',
             ],
         ]);
     }
 
-    public function getAllServicios()
+    public function getAll(): array
     {
         // Logic to retrieve all servicios
         try {
-            $response = $this->httpClient->get('/Servicios');
-            $data = json_decode($response->getBody(), true);
-            return $data;
-        } catch (\Exception $e) {
-            Log::error('Error fetching servicios: ' . $e->getMessage());
+            $response = $this->client->get('/Servicios');
+            return json_decode($response->getBody()->getContents(), true) ?? [];
+        } catch (RequestException $e) {
+            Log::error('ServicioService::getAll - ' . $e->getMessage());
             return [];
         }
     }
 
-    public function getServicioById($id)
+    public function getServicioById($id) : ?array
     {
         // Logic to retrieve a servicio by its ID
         try {
@@ -49,17 +51,17 @@ class ServicioService
         }
     }
 
-    public function createServicio($data)
+    public function createServicio($data): array
     {
         // Logic to create a new servicio
     }
 
-    public function updateServicio($id, $data)
+    public function updateServicio($id, $data): array
     {
         // Logic to update an existing servicio
     }
 
-    public function deleteServicio($id)
+    public function deleteServicio($id): array
     {
         // Logic to delete a servicio
     }
